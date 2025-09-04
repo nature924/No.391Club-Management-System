@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ShetuanDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.shetuan_uuid_unmber as shetuanUuidUnmber
+        ,a.shetuan_name as shetuanName
+        ,a.shetuan_types as shetuanTypes
+        ,a.shetuan_photo as shetuanPhoto
+        ,a.tuanzhang_id as tuanzhangId
+        ,a.shetuan_address as shetuanAddress
+        ,a.shetuan_content as shetuanContent
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ShetuanView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,tuanzhang.tuanzhang_name as tuanzhangName
+        ,tuanzhang.tuanzhang_photo as tuanzhangPhoto
+        ,tuanzhang.tuanzhang_phone as tuanzhangPhone
+        ,tuanzhang.tuanzhang_id_number as tuanzhangIdNumber
+        ,tuanzhang.tuanzhang_email as tuanzhangEmail
+        ,tuanzhang.tuanzhang_delete as tuanzhangDelete
+
+        FROM shetuan  a
+        left JOIN tuanzhang tuanzhang ON a.tuanzhang_id = tuanzhang.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.shetuanUuidUnmber != '' and params.shetuanUuidUnmber != null and params.shetuanUuidUnmber != 'null' ">
+                and a.shetuan_uuid_unmber like CONCAT('%',#{params.shetuanUuidUnmber},'%')
+            </if>
+            <if test=" params.shetuanName != '' and params.shetuanName != null and params.shetuanName != 'null' ">
+                and a.shetuan_name like CONCAT('%',#{params.shetuanName},'%')
+            </if>
+            <if test="params.shetuanTypes != null and params.shetuanTypes != ''">
+                and a.shetuan_types = #{params.shetuanTypes}
+            </if>
+            <if test="params.tuanzhangId != null and params.tuanzhangId != ''">
+                and (
+                    a.tuanzhang_id = #{params.tuanzhangId}
+                )
+            </if>
+            <if test=" params.shetuanAddress != '' and params.shetuanAddress != null and params.shetuanAddress != 'null' ">
+                and a.shetuan_address like CONCAT('%',#{params.shetuanAddress},'%')
+            </if>
+            <if test=" params.shetuanContent != '' and params.shetuanContent != null and params.shetuanContent != 'null' ">
+                and a.shetuan_content like CONCAT('%',#{params.shetuanContent},'%')
+            </if>
+
+                <!-- 判断团长的id不为空 -->
+            <if test=" params.tuanzhangIdNotNull != '' and params.tuanzhangIdNotNull != null and params.tuanzhangIdNotNull != 'null' ">
+                and a.tuanzhang_id IS NOT NULL
+            </if>
+            <if test=" params.tuanzhangName != '' and params.tuanzhangName != null and params.tuanzhangName != 'null' ">
+                and tuanzhang.tuanzhang_name like CONCAT('%',#{params.tuanzhangName},'%')
+            </if>
+            <if test=" params.tuanzhangPhone != '' and params.tuanzhangPhone != null and params.tuanzhangPhone != 'null' ">
+                and tuanzhang.tuanzhang_phone like CONCAT('%',#{params.tuanzhangPhone},'%')
+            </if>
+            <if test=" params.tuanzhangIdNumber != '' and params.tuanzhangIdNumber != null and params.tuanzhangIdNumber != 'null' ">
+                and tuanzhang.tuanzhang_id_number like CONCAT('%',#{params.tuanzhangIdNumber},'%')
+            </if>
+            <if test=" params.tuanzhangEmail != '' and params.tuanzhangEmail != null and params.tuanzhangEmail != 'null' ">
+                and tuanzhang.tuanzhang_email like CONCAT('%',#{params.tuanzhangEmail},'%')
+            </if>
+            <if test="params.tuanzhangDeleteStart != null  and params.tuanzhangDeleteStart != '' ">
+                <![CDATA[  and tuanzhang.tuanzhang_delete >= #{params.tuanzhangDeleteStart}   ]]>
+            </if>
+            <if test="params.tuanzhangDeleteEnd != null  and params.tuanzhangDeleteEnd != '' ">
+                <![CDATA[  and tuanzhang.tuanzhang_delete <= #{params.tuanzhangDeleteEnd}   ]]>
+            </if>
+            <if test="params.tuanzhangDelete != null  and params.tuanzhangDelete != '' ">
+                and tuanzhang.tuanzhang_delete = #{params.tuanzhangDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
